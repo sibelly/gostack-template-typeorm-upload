@@ -1,5 +1,5 @@
-import { getCustomRepository, getRepository } from 'typeorm';
-import TransactionsRepository from '../repositories/TransactionsRepository';
+import { getCustomRepository, getRepository } from 'typeorm'
+import TransactionsRepository from '../repositories/TransactionsRepository'
 import AppError from '../errors/AppError';
 
 import Transaction from '../models/Transaction';
@@ -13,43 +13,38 @@ interface Request {
 }
 
 class CreateTransactionService {
-  public async execute({
-    title,
-    value,
-    type,
-    category,
-  }: Request): Promise<Transaction> {
-    const transactionsRepository = getCustomRepository(TransactionsRepository);
-    const categoriesRepository = getRepository(Category);
+  public async execute({ title, value, type, category }: Request): Promise<Transaction> {
+    const transactionsRepository = getCustomRepository(TransactionsRepository)
+    const categoriesRepository = getRepository(Category)
 
-    const { total } = await transactionsRepository.getBalance();
+    const { total } = await transactionsRepository.getBalance()
 
     if (type === 'outcome' && total < value) {
-      throw new AppError('You do not have enough balance.');
+      throw new AppError('You do not have enough balance.')
     }
 
     let transactionCategory = await categoriesRepository.findOne({
       where: {
-        title: category,
-      },
-    });
+        title: category
+      }
+    })
 
     if (!transactionCategory) {
       transactionCategory = categoriesRepository.create({
-        title: category,
-      });
-      await categoriesRepository.save(transactionCategory);
+        title: category
+      })
+      await categoriesRepository.save(transactionCategory)
     }
 
     const transaction = transactionsRepository.create({
       title,
       value,
       type,
-      category: transactionCategory,
-    });
+      category: transactionCategory
+    })
 
-    await transactionsRepository.save(transaction);
-    return transaction;
+    await transactionsRepository.save(transaction)
+    return transaction
   }
 }
 
